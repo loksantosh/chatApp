@@ -136,7 +136,7 @@ const Signup = () => {
       />
     </FormControl>
 
-    <FormControl id='email' isRequired>
+    <FormControl id='emailId' isRequired>
       <FormLabel>Email</FormLabel>
       <Input
         type={'email'}
@@ -145,7 +145,7 @@ const Signup = () => {
       />
     </FormControl>
 
-    <FormControl id='password' isRequired>
+    <FormControl id='passwordId' isRequired>
       <FormLabel>Password</FormLabel>
       <InputGroup>
         <Input

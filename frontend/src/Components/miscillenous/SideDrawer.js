@@ -28,6 +28,9 @@ import axios from "axios";
 import ChatLoading from '../ChatLoading';
 import UserListItem from '../userAvatar/UserListItem';
 import { Spinner } from "@chakra-ui/spinner";
+import { getSender } from '../../config/ChatLogics';
+import  NotificationBadge  from "react-notification-badge";
+
 const SideDrawer = () => {
 
 
@@ -38,7 +41,7 @@ const SideDrawer = () => {
     const [loadingChat, setLoadingChat] = useState(false);
     const toast = useToast();
     const history = useHistory();
-    const { user ,setSelectedChat,chats,setChats} = ChatState()
+    const { user, setSelectedChat, chats, setChats, notification, setNotification } = ChatState()
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const logoutHandler = () => {
@@ -46,7 +49,7 @@ const SideDrawer = () => {
         history.push("/");
     };
 
-    const handleSearch =async() => {
+    const handleSearch = async () => {
         if (!search) {
             toast({
                 title: "Please Enter something in search",
@@ -57,35 +60,35 @@ const SideDrawer = () => {
             });
             return;
         }
-    
 
-    try {
-        
-        setLoading(true);
 
-        const config = {
-            headers: {
-                Authorization: `Bearer ${user.token}`,
-            },
-        };
+        try {
 
-        const { data } = await axios.get(`/api/user?search=${search}`, config);
+            setLoading(true);
 
-        setLoading(false);
-        setSearchResult(data);
-    } catch (error) {
-        toast({
-            title: "Error Occured!",
-            description: "Failed to Load the Search Results",
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-            position: "bottom-left",
-        });
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            const { data } = await axios.get(`/api/user?search=${search}`, config);
+
+            setLoading(false);
+            setSearchResult(data);
+        } catch (error) {
+            toast({
+                title: "Error Occured!",
+                description: "Failed to Load the Search Results",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom-left",
+            });
+        }
     }
-} 
-    
-const accessChat=async(userId)=>{
+
+    const accessChat = async (userId) => {
         try {
             setLoadingChat(true);
             const config = {
@@ -110,9 +113,9 @@ const accessChat=async(userId)=>{
                 position: "bottom-left",
             });
         }
-    
 
-}
+
+    }
     return <>
         <Box
             display="flex"
@@ -137,10 +140,28 @@ const accessChat=async(userId)=>{
             <div>
                 <Menu>
                     <MenuButton p={1}>
-
+                        <NotificationBadge
+                            count={notification.length}
+                            
+                        />
                         <BellIcon fontSize="2xl" m={1} />
                     </MenuButton>
-
+                    <MenuList p={3}>
+                        {!notification.length && "No New Messages"}
+                        {notification.map((notif) => (
+                            <MenuItem
+                                key={notif._id}
+                                onClick={() => {
+                                    setSelectedChat(notif.chat);
+                                    setNotification(notification.filter((n) => n !== notif));
+                                }}
+                            >
+                                {notif.chat.isGroupChat
+                                    ? `New Message in ${notif.chat.chatName}`
+                                    : `New Message from ${getSender(user, notif.chat.users)}`}
+                            </MenuItem>
+                        ))}
+                    </MenuList>
                 </Menu>
                 <Menu>
                     <MenuButton as={Button} bg="white" rightIcon={<ChevronDownIcon />} >
@@ -167,9 +188,9 @@ const accessChat=async(userId)=>{
         <Drawer placement="left" onClose={onClose} isOpen={isOpen} >
             <DrawerOverlay />
             <DrawerContent>
-                <DrawerHeader borderBottomWidth="1px">Create your account</DrawerHeader> 
+                <DrawerHeader borderBottomWidth="1px">Create your account</DrawerHeader>
                 <DrawerBody>
-                   <Box display='flex' pb={2}>
+                    <Box display='flex' pb={2}>
                         <Input
                             placeholder="Search by name or email"
                             mr={2}
@@ -177,7 +198,7 @@ const accessChat=async(userId)=>{
                             onChange={(e) => setSearch(e.target.value)}
                         />
                         <Button onClick={handleSearch} >Go</Button>
-                   </Box>
+                    </Box>
                     {loadingChat ? (
                         <ChatLoading />
                     ) : (
@@ -189,11 +210,11 @@ const accessChat=async(userId)=>{
                             />
                         ))
                     )}
-                    
+
                 </DrawerBody>
-            
+
             </DrawerContent>
-</Drawer>
+        </Drawer>
 
 
 
